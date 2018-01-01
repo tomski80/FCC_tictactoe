@@ -71,6 +71,12 @@ GAME.board = (function(){
         });
     }
 
+    function isEmpty(){
+        return _board.every(function(field){
+            return field === '';
+        });
+    }
+
     function isWin(mark){
         //rows
         if(_board[0] === mark && _board[1] === mark && _board[2] === mark){
@@ -125,6 +131,7 @@ GAME.board = (function(){
         getField : getField,
         display : display,
         isFull : isFull,
+        isEmpty : isEmpty,
         isWin : isWin,
         getRow : getRow,
         getCol : getCol,
@@ -147,7 +154,7 @@ GAME.Player = function(name,mark,player){
     this.mark = mark;
   
     function humanChoice(fieldId){
-        GAME.board.updateField(fieldId,_mark);
+        GAME.board.updateField(fieldId,GAME.humanMark);
     }
 
     function computerChoice(){
@@ -161,7 +168,7 @@ GAME.Player = function(name,mark,player){
             var count;
 
             rowCol = rowCol.map(function(field){
-                if(field === 'O'){
+                if(field === GAME.humanMark){
                     return 1;
                 }else{
                     return 0;
@@ -177,7 +184,7 @@ GAME.Player = function(name,mark,player){
             var count;
 
             rowCol = rowCol.map(function(field){
-                if(field === 'O' || field === 'X'){
+                if(field === GAME.humanMark || field === GAME.computerMark){
                     return 1;
                 }else{
                     return 0;
@@ -284,7 +291,7 @@ GAME.Player = function(name,mark,player){
             compFieldId = chooseRandom();
         }
 
-        GAME.board.updateField(compFieldId,_mark);
+        GAME.board.updateField(compFieldId,GAME.computerMark);
     }
 
     this.choice = function(fieldId){
@@ -295,10 +302,12 @@ GAME.Player = function(name,mark,player){
         }
     };
 };
-
+//property to store mark for human player
+GAME.humanMark = 'O';
+GAME.computerMark = 'X';
 //objects for human-player and computer player
-GAME.humanPlayer = new GAME.Player('Tom','O',GAME.const.HUMAN);
-GAME.computerPlayer = new GAME.Player('Computer','X',GAME.const.COMPUTER);
+GAME.humanPlayer = new GAME.Player('Tom',GAME.humanMark,GAME.const.HUMAN);
+GAME.computerPlayer = new GAME.Player('Computer',GAME.computerMark,GAME.const.COMPUTER);
 
 /********************* *
 * main game logic here *
@@ -309,9 +318,9 @@ GAME.handler = function(elemId){
     //helper function
     function whoWon(){
         //check for the winner
-        if(GAME.board.isWin(GAME.humanPlayer.mark)){
+        if(GAME.board.isWin(GAME.humanMark)){
             return 'Player Win!';
-        }else if(GAME.board.isWin(GAME.computerPlayer.mark)){
+        }else if(GAME.board.isWin(GAME.computerMark)){
             return 'Computer Win!';
         }else if(GAME.board.isFull()){
             return 'It\'s a tie!';
@@ -338,6 +347,7 @@ GAME.handler = function(elemId){
             winner = whoWon();
             alert(winner);
             GAME.board.clear();
+            $('.mark-toggle').toggle();
             GAME.board.display();
         },200);
     }
@@ -349,9 +359,28 @@ GAME.handler = function(elemId){
 ************************/
 $(function(){
 
+    //let player choose mark X or O
+    $('.mark').on('click', function(){
+        var mark;
+
+        if ( $('#X').prop('checked') ){
+            GAME.humanMark = 'X';
+            GAME.computerMark = 'O';
+        }
+        if( $('#O').prop('checked') ){
+            GAME.humanMark = 'O';
+            GAME.computerMark = 'X';
+        }
+    })
+
     $('.btn').on('click', function(){
         var id;
         
+        //remove mark toggle on game start
+        if(GAME.board.isEmpty()){
+            $('.mark-toggle').toggle();
+        }
+
         id = $(this).attr('id');
         GAME.handler(id);
     });
