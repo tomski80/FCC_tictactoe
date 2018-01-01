@@ -21,3 +21,8 @@ body {
     height: 40px;
     border: none;
 }
+
+.title {
+    margin: 0 auto;
+    text-align: center;
+}
